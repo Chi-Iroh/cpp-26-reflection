@@ -16,9 +16,12 @@ int main() {
         .c = "helloworld !"
     };
 
-    std::println("JSON:\n{}", jsonDescribe<C>());
-    std::println("JSON:\n{}", jsonDescribe<C>(c));
+    std::println("JSON type:\n{}", jsonDescribe<C>());
+    std::println("JSON value:\n{}", jsonDescribe<C>(c));
     std::println("{:-<40}", "");
-    std::println("YAML:\n{}", yamlDescribe<C>());
-    std::println("YAML:\n{}", yamlDescribe<C>(c));
+    std::println("YAML type:\n{}", yamlDescribe<C>());
+    std::println("YAML value:\n{}", yamlDescribe<C>(c));
+    std::println("{:-<40}", "");
+    std::println("XML type:\n{}", xmlDescribe<C>());
+    std::println("XML value:\n{}", xmlDescribe<C>(c));
 }
