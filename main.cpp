@@ -112,55 +112,41 @@ public:
     }
 };
 
-struct Identifier {
-    std::string_view name;
-    std::string_view type_name;
-};
-
-template<typename T>
-constexpr std::size_t numberOfIdentifiers = nonstatic_data_members_of(^^T, std::meta::access_context::current()).size();
-
 template<typename T>
 constexpr std::string_view prettyPrintType = display_string_of(^^T);
 
 template<typename T, std::derived_from<DescriptorBuilder> Builder>
-class Descriptor {
-protected:
-    const std::string_view current_type_name{ prettyPrintType<T> };
-    std::array<Identifier, numberOfIdentifiers<T>> identifiers{};
+std::string _describe(const T* const instance) {
+    Builder builder{};
+    builder.addField("type", prettyPrintType<T>);
+    builder.addSubElement(instance == nullptr ? "layout" : "data");
 
-public:
-    constexpr Descriptor() {
-        for (std::size_t i{ 0 }; const auto member : nonstatic_data_members_of(^^T, std::meta::access_context::current())) {
-            this->identifiers[i++] = {
-                .name = identifier_of(member),
-                .type_name = display_string_of(type_of(member))
-            };
-        }
+    template for (constexpr auto member : define_static_array(nonstatic_data_members_of(^^T, std::meta::access_context::current()))) {
+        builder.addField(identifier_of(member), instance == nullptr ? display_string_of(type_of(member)) : std::format("{}", instance->[:member:]));
     }
+    return builder.end();
+}
 
-    virtual std::string str() {
-        Builder builder{};
-        builder.addField("type", this->current_type_name);
-        builder.addSubElement("layout");
+template<typename T, std::derived_from<DescriptorBuilder> Builder>
+std::string describe(const T& instance) {
+    return _describe<T, Builder>(&instance);
+}
 
+template<typename T, std::derived_from<DescriptorBuilder> Builder>
+std::string describe() {
+    return _describe<T, Builder>(nullptr);
+}
 
-        for (const auto& [name, type_name] : this->identifiers) {
-            builder.addField(name, type_name);
-        }
-        return builder.end();
-    }
-
-    virtual std::string str([[maybe_unused]] const T& instance) {
-        return "";
-    }
+template<typename T, std::derived_from<DescriptorBuilder> Builder>
+constexpr auto makeDescribeFunction = [] <typename... Ts> (const Ts&... ts) {
+    return describe<T, Builder>(ts...);
 };
 
 template<typename T>
-using JsonDescriptor = Descriptor<T, JsonBuilder>;
+constexpr auto jsonDescribe{ makeDescribeFunction<T, JsonBuilder> };
 
 template<typename T>
-using YamlDescriptor = Descriptor<T, YamlBuilder>;
+constexpr auto yamlDescribe{ makeDescribeFunction<T, YamlBuilder> };
 
 struct C {
     int a;
@@ -169,7 +155,15 @@ struct C {
 };
 
 int main() {
-    std::println("JSON:\n{}", JsonDescriptor<C>().str());
+    C c{
+        .a = 7,
+        .b = 3.14159,
+        .c = "helloworld !"
+    };
+
+    std::println("JSON:\n{}", jsonDescribe<C>());
+    std::println("JSON:\n{}", jsonDescribe<C>(c));
     std::println("{:-<40}", "");
-    std::println("YAML:\n{}", YamlDescriptor<C>().str());
+    std::println("YAML:\n{}", yamlDescribe<C>());
+    std::println("YAML:\n{}", yamlDescribe<C>(c));
 }
