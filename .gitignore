@@ -1,4 +1,4 @@
 a.out
-obj/
-deps/
+obj/**/*.o
+deps/**/*.d
 .vscode/
