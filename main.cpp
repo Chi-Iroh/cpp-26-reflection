@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <print>
+#include <stack>
 
 class DescriptorBuilder {
 public:
@@ -15,23 +16,36 @@ public:
 
 class JsonBuilder : public DescriptorBuilder {
 private:
-    std::string buffer{ "{\n" };
+    std::string buffer{ "{" };
     bool locked{ false };
     std::string indentation{ "\t" };
+    std::stack<bool> firstElem{ { true } };
+
+    void addComma() {
+        if (this->firstElem.top()) {
+            this->firstElem.top() = false;
+        } else {
+            this->buffer += ",";
+        }
+        this->buffer += "\n";
+    }
 
 public:
     virtual void addField(std::string_view name, std::string_view value) {
         if (this->locked) {
             return;
         }
-        this->buffer += std::format("{}{}: \"{}\"\n", this->indentation, name, value);
+        this->addComma();
+        this->buffer += std::format("{}{}: \"{}\"", this->indentation, name, value);
     }
 
     virtual void addSubElement(std::string_view name) {
         if (this->locked) {
             return;
         }
-        this->buffer += std::format("{}{}: {{\n", this->indentation, name);
+        this->addComma();
+        this->firstElem.push(true);
+        this->buffer += std::format("{}{}: {{", this->indentation, name);
         this->indentation += '\t';
     }
 
@@ -40,7 +54,8 @@ public:
             return;
         }
         this->indentation.pop_back();
-        this->buffer += this->indentation + "}\n";
+        this->firstElem.pop();
+        this->buffer += "\n" + this->indentation + "}";
     }
 
     virtual std::string end() {
