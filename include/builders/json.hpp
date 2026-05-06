@@ -11,7 +11,7 @@ private:
     std::string indentation{ "\t" };
     std::stack<bool> firstElem{ { true } };
 
-    void addComma();
+    void addNewlineAndComma();
 
 public:
     virtual void addField(std::string_view name, std::string_view value);
