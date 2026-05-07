@@ -13,6 +13,7 @@ struct C {
         int* ptr;
         std::pair<int, std::string> pair;
     } d;
+    char e;
 };
 
 int main() {
@@ -24,7 +25,8 @@ int main() {
         .d = {
             .ptr = &n,
             .pair = { 485, "goodbye" }
-        }
+        },
+        .e = 'J'
     };
 
     std::println("JSON type:\n{}", jsonDescribe<C>());

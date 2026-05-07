@@ -45,6 +45,7 @@ Builder _describe(const T* const instance, Builder& builder) {
         if constexpr (has_data_members<typename [:type_of(member):]>()) {
             builder.addSubElement(identifier);
             _describe<MemberType, Builder>(memberPtr, builder);
+            builder.endSubElement();
         } else {
             builder.addField(identifier, instance == nullptr ? display_string_of(type_of(member)) : std::format("{}", *memberPtr));
         }
