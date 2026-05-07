@@ -2,7 +2,7 @@
 
 #include <stack>
 
-#include "include/builder.hpp"
+#include "../builder.hpp"
 
 class XmlBuilder : public DescriptorBuilder {
 private:
@@ -21,7 +21,7 @@ public:
     virtual std::string end();
 };
 
-#include "include/describe.hpp"
+#include "../describe.hpp"
 
 template<typename T>
 constexpr auto xmlDescribe{ makeDescribeFunction<T, XmlBuilder> };

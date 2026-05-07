@@ -2,7 +2,7 @@
 
 #include <stack>
 
-#include "include/builder.hpp"
+#include "../builder.hpp"
 
 class JsonBuilder : public DescriptorBuilder {
 private:
@@ -21,7 +21,7 @@ public:
 };
 
 
-#include "include/describe.hpp"
+#include "../describe.hpp"
 
 template<typename T>
 constexpr auto jsonDescribe{ makeDescribeFunction<T, JsonBuilder> };

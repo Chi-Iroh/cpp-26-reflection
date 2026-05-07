@@ -2,7 +2,7 @@
 
 #include <stack>
 
-#include "include/builder.hpp"
+#include "../builder.hpp"
 
 class YamlBuilder : public DescriptorBuilder {
 private:
@@ -20,7 +20,7 @@ public:
     virtual std::string end();
 };
 
-#include "include/describe.hpp"
+#include "../describe.hpp"
 
 template<typename T>
 constexpr auto yamlDescribe{ makeDescribeFunction<T, YamlBuilder> };
