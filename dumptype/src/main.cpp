@@ -14,6 +14,10 @@ struct C {
         std::pair<int, std::string> pair;
     } d;
     char e;
+    union {
+        char c;
+        float f;
+    } f;
 };
 
 int main() {
@@ -26,7 +30,10 @@ int main() {
             .ptr = &n,
             .pair = { 485, "goodbye" }
         },
-        .e = 'J'
+        .e = 'J',
+        .f = {
+            .f = 2.56
+        }
     };
 
     std::println("JSON type:\n{}", jsonDescribe<C>());
