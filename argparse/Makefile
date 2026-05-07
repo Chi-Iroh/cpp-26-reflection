@@ -1,5 +1,5 @@
 SHELL := bash
 
-BIN = dumptype.out
+BIN = argparse.out
 
 include ../build.mk
