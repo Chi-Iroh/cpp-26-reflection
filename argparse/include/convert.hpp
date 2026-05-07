@@ -3,6 +3,7 @@
 #include <charconv>
 #include <concepts>
 #include <expected>
+#include <optional>
 #include <string_view>
 #include <type_traits>
 
@@ -44,5 +45,12 @@ struct Convert<To> {
             return result;
         }
         return std::unexpected(Error::InvalidNumber);
+    }
+};
+
+template<typename T>
+struct Convert<std::optional<T>> {
+    static std::expected<std::optional<T>, Error> convert(std::string_view str) {
+        return Convert<T>::convert(str);
     }
 };

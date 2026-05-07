@@ -1,6 +1,7 @@
 #pragma once
 
 #include <meta>
+#include <optional>
 #include <print>
 #include <string>
 #include <string_view>
@@ -17,6 +18,16 @@ struct std::formatter<T*> : std::formatter<void*> {
 
     auto format(T* ptr, std::format_context& ctx) const {
         return std::formatter<void*>::format(static_cast<void*>(ptr), ctx);
+    }
+};
+
+template<typename T>
+struct std::formatter<std::optional<T>> : std::formatter<T> {
+    auto format(const std::optional<T>& optional, std::format_context& ctx) const {
+        if (optional.has_value()) {
+            return std::formatter<T>::format(optional.value(), ctx);
+        }
+        return std::format_to(ctx.out(), "{}", "<nullopt>");
     }
 };
 

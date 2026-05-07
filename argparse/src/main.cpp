@@ -27,6 +27,12 @@ void operator>>(const std::optional<T>& opt, F f) {
     }
 }
 
+template<typename T>
+constexpr bool is_optional{ false };
+
+template<typename T>
+constexpr bool is_optional<std::optional<T>>{ true };
+
 class ArgsParser {
 private:
     using Value = std::optional<std::string_view>;
@@ -49,9 +55,9 @@ public:
     void parseArgs(T& args) {
         template for (constexpr std::meta::info member : define_static_array(nonstatic_data_members_of(^^T, ctx))) {
             constexpr std::string_view argName{ identifier_of(member) };
+            using MemberType = typename [:type_of(member):];
             if (this->args.contains(argName)) {
                 this->args.at(argName) >> [&args, argName] (const std::string_view& val) {
-                    using MemberType = typename [:type_of(member):];
                     const std::expected arg{ Convert<MemberType>::convert(val) };
                     if (arg.has_value()) {
                         args.[:member:] = arg.value();
@@ -68,6 +74,8 @@ public:
                         );
                     }
                 };
+            } else if (!is_optional<MemberType>) {
+                throw std::invalid_argument(std::format("Missing required argument '{}' !", argName));
             }
         }
     }
@@ -83,7 +91,7 @@ public:
 
 struct Args {
     std::string name;
-    unsigned int year;
+    std::optional<unsigned int> year;
 };
 
 int main(int argc, char* argv[]) {
