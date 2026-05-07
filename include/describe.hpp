@@ -22,14 +22,14 @@ struct std::formatter<T*> : std::formatter<void*> {
 
 template <typename T>
 consteval bool has_data_members() {
-    constexpr auto info = ^^T;
+    constexpr std::meta::info info = ^^T;
 
     try {
-        std::meta::nonstatic_data_members_of(info, ctx); // throws for simple types like int
+        nonstatic_data_members_of(info, ctx); // throws for simple types like int
     } catch (std::meta::exception&) {
         return false;
     }
-    return !define_static_array(std::meta::nonstatic_data_members_of(info, ctx)).empty();
+    return !define_static_array(nonstatic_data_members_of(info, ctx)).empty();
 }
 
 template<typename T, std::derived_from<DescriptorBuilder> Builder>
@@ -37,7 +37,7 @@ Builder _describe(const T* const instance, Builder& builder) {
     builder.addField("type", display_string_of(^^T));
     builder.addSubElement(instance == nullptr ? "layout" : "data");
 
-    template for (constexpr auto member : define_static_array(nonstatic_data_members_of(^^T, ctx))) {
+    template for (constexpr std::meta::info member : define_static_array(nonstatic_data_members_of(^^T, ctx))) {
         constexpr std::string_view identifier{ identifier_of(member) };
         using MemberType = typename [:type_of(member):];
         const MemberType* const memberPtr{ instance == nullptr ? nullptr : &instance->[:member:] };
