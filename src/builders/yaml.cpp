@@ -44,5 +44,6 @@ std::string YamlBuilder::end() {
     while (!this->indentation.empty()) {
         this->endSubElement();
     }
+    this->locked = true;
     return this->buffer;
 }
