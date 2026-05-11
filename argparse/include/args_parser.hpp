@@ -19,17 +19,63 @@ concept Callable = requires (T func, Arg arg) {
     func(arg);
 };
 
+template<typename Args>
 class ArgsParser {
 private:
     using Value = std::optional<std::string_view>;
-    std::map<std::string_view, Value> args{};
+    std::map<std::string_view, Value> args;
+    const std::string_view program_name;
+
+    bool has_help_flag() const {
+        for (const auto& [flag, _] : this->args) {
+            if (flag == "-h" || flag == "--help" || flag == "-?") {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void show_help() const {
+        std::print("USAGE: {} [-h | --help | -?]", this->program_name);
+
+        template for (constexpr std::meta::info arg : define_static_array(nonstatic_data_members_of(^^Args, ctx))) {
+            using ArgType = typename [:type_of(arg):];
+
+            std::print(" ");
+            if constexpr (is_optional<ArgType>) {
+                std::print("[");
+            }
+            std::print("{}", identifier_of(arg));
+            if constexpr (is_optional<ArgType>) {
+                std::print("]");
+            }
+        }
+
+        std::println();
+    }
 
 public:
-    ArgsParser(int argc, char* argv[]);
+    ArgsParser(int argc, char* argv[]) :
+        program_name{ argv[0] }
+    {
+        for (int i = 1 /* skipping program name */; i < argc; i++) {
+            const std::string_view arg{ argv[i] };
+            const std::size_t equalSignPos{ arg.find('=') };
+            if (equalSignPos == std::string_view::npos) {
+                this->args.emplace(arg, std::nullopt);
+            } else {
+                this->args.emplace(arg.substr(0, equalSignPos), arg.substr(equalSignPos + 1));
+            }
+        }
+    }
 
-    template<typename T>
-    void parseArgs(T& args) {
-        template for (constexpr std::meta::info member : define_static_array(nonstatic_data_members_of(^^T, ctx))) {
+    void parseArgs(Args& args) {
+        if (this->has_help_flag()) {
+            this->show_help();
+            return;
+        }
+
+        template for (constexpr std::meta::info member : define_static_array(nonstatic_data_members_of(^^Args, ctx))) {
             constexpr std::string_view argName{ identifier_of(member) };
             using MemberType = typename [:type_of(member):];
 
@@ -55,7 +101,7 @@ public:
                         argName,
                         val,
                         display_string_of(type_of(member)),
-                        display_string_of(^^T)
+                        display_string_of(^^Args)
                     )
                 };
             }
@@ -94,11 +140,10 @@ public:
         }
     }
 
-    template<typename T>
-    requires std::is_default_constructible_v<T>
-    T parseArgs() {
-        T args{};
-        parseArgs<T>(args);
+    Args parseArgs() {
+        static_assert(std::is_default_constructible_v<Args>);
+        Args args{};
+        this->parseArgs(args);
         return args;
     }
 };

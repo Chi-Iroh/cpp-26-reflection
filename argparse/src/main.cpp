@@ -38,7 +38,7 @@ struct Args {
 
 int main(int argc, char* argv[]) {
     try {
-        const Args args{ ArgsParser{ argc, argv }.parseArgs<Args>() };
+        const Args args{ ArgsParser<Args>{ argc, argv }.parseArgs() };
         std::println("{}", jsonDescribe<Args>(args));
     } catch (std::exception& err) {
         std::println(stderr, "ERROR: {}", err.what());
