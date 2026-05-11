@@ -40,6 +40,10 @@ public:
                 continue;
             }
 
+            if (!this->args.at(argName).has_value()) {
+                throw std::invalid_argument{ std::format("Provided argument '{}' needs an accompanying value !", argName) };
+            }
+
             const std::string_view val{ this->args.at(argName).value() };
             const std::expected expectedArg{ Convert<MemberType>::convert(val) };
 
@@ -70,7 +74,7 @@ public:
                         std::format(
                             "Value '{}' violates constraint of type '{}' !",
                             arg,
-                            identifier_of(^^AnnotationType)
+                            display_string_of(remove_cvref(dealias(^^AnnotationType)))
                         )
                     };
                 };
@@ -82,7 +86,7 @@ public:
                     } else if (!an.check(arg.value())) {
                         fail(arg.value());
                     }
-                } else if constexpr (!an.check(arg)) {
+                } else if (!an.check(arg)) {
                     fail(arg);
                 }
             }

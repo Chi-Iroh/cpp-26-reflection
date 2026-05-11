@@ -36,7 +36,10 @@ struct Convert<bool> {
     }
 };
 
-template<std::integral To>
+template<typename T>
+concept Arithmetic = std::integral<T> || std::floating_point<T>;
+
+template<Arithmetic To>
 struct Convert<To> {
     static std::expected<To, Error> convert(std::string_view str) {
         To result{};

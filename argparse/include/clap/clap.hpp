@@ -16,6 +16,7 @@ namespace clap {
     template<typename Checked>
     struct Constraint : public _Constraint {
         bool check(const Checked& value) const = delete(
+            "***** Maybe you forgot to implement check() method ? *****  "
             "Do not use class Constraint directly, it only exists to show the correct prototype for check() method, "
             "as virtual functions are disallowed here because of std::meta's extract<> requiring structural types !"
         );
