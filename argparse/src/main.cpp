@@ -16,7 +16,7 @@ struct Args {
     [[=clap::Between<unsigned int>(1900, 2100)]]
     std::optional<unsigned int> year;
 
-    [[=clap::AllowedValues<float, 2>{{ 3.14159, 2.71828 }}]]
+    [[=clap::AllowedValues<float, 3.14159f, 2.71828f>()]]
     float constant;
 };
 

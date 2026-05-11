@@ -6,15 +6,9 @@
 #include "argparse/include/clap/clap.hpp"
 
 namespace clap {
-    template<std::equality_comparable T, std::size_t N>
+    template<std::equality_comparable T, T... Allowed>
     struct AllowedValues : public Constraint<T> {
-        const std::array<T, N> allowedValues;
-
-        // template<typename... Ts>
-        // requires (std::same_as<Ts, T> && ...)
-        explicit constexpr AllowedValues(const std::array<T, N>& allowedValues) :
-            allowedValues{ allowedValues }
-        {}
+        static constexpr std::array<T, sizeof...(Allowed)> allowedValues{{ Allowed... }};
 
         bool check(const T& value) const {
             for (const T& allowed : this->allowedValues) {
