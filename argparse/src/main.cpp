@@ -13,7 +13,7 @@
 struct Args {
     std::string name;
 
-    [[=clap::Lower<unsigned int>(2100)]]
+    [[=clap::Between<unsigned int>(1900, 2100)]]
     std::optional<unsigned int> year;
 };
 

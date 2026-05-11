@@ -1,3 +1,5 @@
 #pragma once
 
-#include "clap/lower.hpp"
+#include "clap/between.hpp"
+#include "clap/lower_than.hpp"
+#include "clap/bigger_than.hpp"
