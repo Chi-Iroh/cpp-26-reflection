@@ -1,25 +1,30 @@
 #pragma once
 
 #include <concepts>
+#include <format>
 #include <optional>
 
-#include "./clap.hpp"
-#include "./lower_than.hpp"
-#include "./bigger_than.hpp"
+#include "argparse/include/clap/clap.hpp"
+#include "argparse/include/clap/traits.hpp"
 
 namespace clap {
     template<typename T>
+    requires (HasLowerThanOrEqualTo<T> && HasBiggerThanOrEqualTo<T>)
     struct Between : public Constraint<T> {
-        const LowerThanOrEqualTo<T> lowerThan;
-        const BiggerThanOrEqualTo<T> biggerThan;
+        const T min;
+        const T max;
 
         explicit constexpr Between(const T& from, const T& to) :
-            lowerThan{ to > from ? to : from },
-            biggerThan{ from < to ? from : to }
+            min{ from < to ? from : to },
+            max{ to > from ? to : from }
         {}
 
         bool check(const T& value) const {
-            return this->lowerThan.check(value) && this->biggerThan.check(value);
+            return this->min <= value && value <= this->max;
+        }
+
+        constexpr auto to_str() const {
+            return ConstraintFormat{ "from {} to {}", this->min, this->max };
         }
     };
 }

@@ -2,6 +2,7 @@
 
 #include <array>
 #include <concepts>
+#include <type_traits>
 
 #include "argparse/include/clap/clap.hpp"
 #include "argparse/include/clap/traits.hpp"
@@ -29,6 +30,10 @@ namespace clap {
                 return !found;
             }
             return found;
+        }
+
+        constexpr auto to_str() const {
+            return ConstraintFormat{ "{}in {}", CheckIfPresent ? "" : "not ", this->values };
         }
     };
 

@@ -14,7 +14,7 @@ namespace clap {
     };
 
     template<typename T>
-    concept HasBiggerOrEqualThan = requires (const T& a, const T& b) {
+    concept HasBiggerThanOrEqualTo = requires (const T& a, const T& b) {
         { a >= b } -> std::same_as<bool>;
     };
 

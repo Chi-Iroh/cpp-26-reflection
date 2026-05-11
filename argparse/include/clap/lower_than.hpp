@@ -1,8 +1,5 @@
 #pragma once
 
-#include <concepts>
-#include <optional>
-
 #include "./clap.hpp"
 #include "./traits.hpp"
 
@@ -18,6 +15,10 @@ namespace clap {
         bool check(const T& value) const {
             return value < this->exclusiveUpperBound;
         }
+
+        constexpr auto to_str() const {
+            return ConstraintFormat{ "< {}", this->inclusiveLowerBound };
+        }
     };
 
     template<HasLowerThanOrEqualTo T>
@@ -30,6 +31,10 @@ namespace clap {
 
         bool check(const T& value) const {
             return value <= this->inclusiveUpperBound;
+        }
+
+        constexpr auto to_str() const {
+            return ConstraintFormat{ "<= {}", this->inclusiveLowerBound };
         }
     };
 }

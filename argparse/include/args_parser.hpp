@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdlib>
 #include <format>
 #include <map>
 #include <meta>
@@ -45,13 +46,31 @@ private:
             if constexpr (is_optional<ArgType>) {
                 std::print("[");
             }
-            std::print("{}", identifier_of(arg));
+            std::print("{}=", identifier_of(arg));
+
+            if constexpr (define_static_array(annotations_of(arg)).size() > 0) {
+                std::print("{{ ");
+                template for (bool first{ true }; constexpr std::meta::info annotation : define_static_array(annotations_of(arg))) {
+                    if (!first) {
+                        std::print(", ");
+                    }
+
+                    using AnnotationType = typename [:type_of(annotation):];
+                    constexpr AnnotationType format{ extract<AnnotationType>(annotation) };
+                    std::apply([format] (const auto&... args) { std::print(format.to_str().fmt.get(), args...); }, format.to_str().args);
+
+                    first = false;
+                }
+                std::print(" }}");
+            }
+
             if constexpr (is_optional<ArgType>) {
                 std::print("]");
             }
         }
 
         std::println();
+        std::exit(0);
     }
 
 public:
