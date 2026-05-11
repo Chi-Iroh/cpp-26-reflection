@@ -8,13 +8,15 @@
 
 namespace clap {
     template<auto... Allowed>
-    requires (sizeof...(Allowed) > 0 && (std::equality_comparable<decltype(Allowed)> && ...)) // at least 1 value, and they can be compared against each other
+    requires (sizeof...(Allowed) > 0) // at least 1 value
     struct AllowedValues : public Constraint<CommonValueType<Allowed...>> {
-        using Elem = std::common_type_t<decltype(Allowed)...>;
-        static constexpr std::array<Elem, sizeof...(Allowed)> allowedValues{{ Allowed... }};
+        using T = std::common_type_t<decltype(Allowed)...>;
+        static constexpr std::array<T, sizeof...(Allowed)> allowedValues{ Allowed... };
 
-        bool check(const Elem& value) const {
-            for (const Elem& allowed : this->allowedValues) {
+        template<typename U>
+        requires std::equality_comparable_with<T, U>
+        bool check(const U& value) const {
+            for (const T& allowed : this->allowedValues) {
                 if (value == allowed) {
                     return true;
                 }

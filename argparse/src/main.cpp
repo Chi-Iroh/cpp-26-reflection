@@ -11,6 +11,7 @@
 #include "argparse/include/clap.hpp"
 
 struct Args {
+    [[=clap::AllowedValues<std::define_static_string("hello"), std::define_static_string("world"), std::define_static_string("goodbye")>()]]
     std::string name;
 
     [[=clap::Between<unsigned int>(1900, 2100)]]
