@@ -20,6 +20,10 @@ concept Callable = requires (T func, Arg arg) {
     func(arg);
 };
 
+using StaticString = std::decay_t<decltype(std::define_static_string("a"))>;
+
+constexpr std::array<StaticString, 3> default_help_args{ "-h", "--help", "-?" };
+
 template<typename Args>
 class ArgsParser {
 private:
@@ -27,17 +31,54 @@ private:
     std::map<std::string_view, Value> args;
     const std::string_view program_name;
 
-    bool has_help_flag() const {
-        for (const auto& [flag, _] : this->args) {
-            if (flag == "-h" || flag == "--help" || flag == "-?") {
+    static consteval bool has_help_annotation() {
+        template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
+            using AnnotationType = typename [:type_of(annotation):];
+            if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
                 return true;
             }
         }
         return false;
     }
 
+    static consteval std::size_t n_help_flags() {
+        template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
+            using AnnotationType = typename [:type_of(annotation):];
+            if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
+                return extract<AnnotationType>(annotation).args.size();
+            }
+        }
+        return default_help_args.size();
+    }
+
+    static consteval std::array<StaticString, ArgsParser<Args>::n_help_flags()> _help_flags() {
+        if constexpr (ArgsParser<Args>::has_help_annotation()) {
+            template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
+                using AnnotationType = typename [:type_of(annotation):];
+                if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
+                    return extract<AnnotationType>(annotation).args;
+                }
+            }
+        } else {
+            return default_help_args;
+        }
+    }
+
+    static constexpr auto help_flags{ ArgsParser<Args>::_help_flags() };
+
+    bool has_help_flag() const {
+        for (const auto& [flag, _] : this->args) {
+            for (const StaticString& help_flag : this->help_flags) {
+                if (flag == help_flag) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     void show_help() const {
-        std::print("USAGE: {} [-h | --help | -?]", this->program_name);
+        std::print("USAGE: {} {}", this->program_name, this->help_flags);
 
         template for (constexpr std::meta::info arg : define_static_array(nonstatic_data_members_of(^^Args, ctx))) {
             using ArgType = typename [:type_of(arg):];
