@@ -46,6 +46,8 @@ struct Convert<To> {
         const std::from_chars_result status{ std::from_chars(str.data(), str.end(), result) };
         if (status && status.ptr == str.end()) {
             return result;
+        } else if (status.ec == std::errc::result_out_of_range) {
+            return std::unexpected(Error::Overflow);
         }
         return std::unexpected(Error::InvalidNumber);
     }

@@ -5,6 +5,7 @@
 enum class Error {
     InvalidValue,
     InvalidNumber,
+    Overflow,
     UnimplementedConversion
 };
 
