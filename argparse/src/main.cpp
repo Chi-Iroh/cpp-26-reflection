@@ -29,6 +29,7 @@ struct Args {
     std::string name;
 
     [[=clap::Between<unsigned int>(1900, 2100)]]
+    [[=clap::ForbiddenValues<2000>()]]
     std::optional<unsigned int> year;
 
     [[=clap::AllowedValues<3.14159f, 2.71828f>()]]
