@@ -22,4 +22,7 @@ namespace clap {
     concept HasLowerThanOrEqualTo = requires (const T& a, const T& b) {
         { a <= b } -> std::same_as<bool>;
     };
+
+    template<auto... Vals>
+    using CommonValueType = std::common_type_t<decltype(Vals)...>;
 }
