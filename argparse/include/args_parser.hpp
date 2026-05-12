@@ -31,40 +31,29 @@ private:
     std::map<std::string_view, Value> args;
     const std::string_view program_name;
 
-    static consteval bool has_help_annotation() {
+    static consteval std::pair<std::meta::info, std::size_t> get_help_annotation() {
         template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
             using AnnotationType = typename [:type_of(annotation):];
             if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
-                return true;
+                return { annotation, extract<AnnotationType>(annotation).args.size() };
             }
         }
-        return false;
+        return { std::meta::info{} /* null reflection */, default_help_args.size() };
     }
 
-    static consteval std::size_t n_help_flags() {
-        template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
-            using AnnotationType = typename [:type_of(annotation):];
-            if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
-                return extract<AnnotationType>(annotation).args.size();
-            }
-        }
-        return default_help_args.size();
-    }
+    static constexpr std::pair<std::meta::info, std::size_t> help_flags_info{ get_help_annotation() };
 
-    static consteval std::array<StaticString, ArgsParser<Args>::n_help_flags()> _help_flags() {
-        if constexpr (ArgsParser<Args>::has_help_annotation()) {
-            template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
-                using AnnotationType = typename [:type_of(annotation):];
-                if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
-                    return extract<AnnotationType>(annotation).args;
-                }
-            }
+    static consteval std::array<StaticString, help_flags_info.second> _help_flags() {
+        constexpr std::meta::info help_annotation{ help_flags_info.first };
+        if constexpr (help_annotation != std::meta::info{}) {
+            using AnnotationType = typename [:type_of(help_annotation):];
+            return extract<AnnotationType>(help_annotation).args;
         } else {
             return default_help_args;
         }
     }
 
-    static constexpr auto help_flags{ ArgsParser<Args>::_help_flags() };
+    static constexpr auto help_flags{ _help_flags() };
 
     bool has_help_flag() const {
         for (const auto& [flag, _] : this->args) {

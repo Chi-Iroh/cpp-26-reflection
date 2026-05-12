@@ -25,7 +25,7 @@
 #define STATIC_STRINGS(...) FOR_EACH(std::define_static_string, __VA_ARGS__)
 
 
-#define HELP [[=clap::Help<STATIC_STRINGS("Small program to test arguments parsing using C++26 reflection.", "--help", "-h", "help")>()]]
+#define HELP [[=clap::Help<STATIC_STRINGS("Small program to test arguments parsing using C++26 reflection.", "--help", "-h", "help", "-?")>()]]
 
 struct HELP Args {
     [[=clap::AllowedValues<STATIC_STRINGS("hello", "world", "goodbye")>()]]
