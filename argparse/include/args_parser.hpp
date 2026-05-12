@@ -122,6 +122,7 @@ private:
 
         std::println();
         std::println("Arguments :");
+        std::println("\t{} :\tDisplay this help", this->help_flags_usage);
 
         template for (constexpr std::meta::info arg : define_static_array(nonstatic_data_members_of(^^Args, ctx))) {
             using ArgType = typename [:type_of(arg):];
