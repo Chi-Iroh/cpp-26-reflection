@@ -6,12 +6,12 @@
 namespace clap {
     struct _Help {};
 
-    template<auto Msg, auto... Args>
-    requires (sizeof...(Args) > 0) // at least 1 value
+    template<auto Msg, auto... Flags>
+    requires (sizeof...(Flags) > 0) // at least 1 value
     struct Help : public _Help {
-        using T = std::common_type_t<decltype(Args)...>;
+        using T = std::common_type_t<decltype(Flags)...>;
 
         static constexpr decltype(Msg) msg{ Msg };
-        static constexpr std::array<T, sizeof...(Args)> args{ Args... };
+        static constexpr std::array<T, sizeof...(Flags)> flags{ Flags... };
     };
 }

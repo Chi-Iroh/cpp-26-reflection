@@ -22,7 +22,7 @@ concept Callable = requires (T func, Arg arg) {
 
 using StaticString = std::decay_t<decltype(std::define_static_string("a"))>;
 
-constexpr std::array<StaticString, 3> default_help_args{ "-h", "--help", "-?" };
+constexpr std::array<StaticString, 3> default_help_flags{ "-h", "--help", "-?" };
 
 template<typename Args>
 class ArgsParser {
@@ -35,10 +35,10 @@ private:
         template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
             using AnnotationType = typename [:type_of(annotation):];
             if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
-                return { annotation, extract<AnnotationType>(annotation).args.size() };
+                return { annotation, extract<AnnotationType>(annotation).flags.size() };
             }
         }
-        return { std::meta::info{} /* null reflection */, default_help_args.size() };
+        return { std::meta::info{} /* null reflection */, default_help_flags.size() };
     }
 
     static constexpr std::pair<std::meta::info, std::size_t> help_flags_info{ get_help_annotation() };
@@ -47,9 +47,9 @@ private:
         constexpr std::meta::info help_annotation{ help_flags_info.first };
         if constexpr (help_annotation != std::meta::info{}) {
             using AnnotationType = typename [:type_of(help_annotation):];
-            return extract<AnnotationType>(help_annotation).args;
+            return extract<AnnotationType>(help_annotation).flags;
         } else {
-            return default_help_args;
+            return default_help_flags;
         }
     }
 
