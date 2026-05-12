@@ -23,7 +23,14 @@ concept Callable = requires (T func, Arg arg) {
 // std::decay_t in case std::define_static_string returns a char array instead of a char pointer
 using StaticString = std::decay_t<decltype(std::define_static_string("a"))>;
 
-constexpr std::array<StaticString, 3> default_help_flags{ "-h", "--help", "-?" };
+constexpr std::array<std::string_view, 3> default_help_flags{ "-h", "--help", "-?" };
+
+template<typename To, typename From, std::size_t N>
+constexpr std::array<To, N> convert_array(const std::array<From, N>& array) {
+    return std::apply([] (const auto&... xs) {
+        return std::array<To, N>{ To{ xs }... };
+    }, array);
+}
 
 template<typename Args>
 class ArgsParser {
@@ -44,11 +51,11 @@ private:
 
     static constexpr std::pair<std::meta::info, std::size_t> help_flags_info{ get_help_annotation() };
 
-    static consteval std::array<StaticString, help_flags_info.second> _help_flags() {
+    static consteval std::array<std::string_view, help_flags_info.second> _help_flags() {
         constexpr std::meta::info help_annotation{ help_flags_info.first };
         if constexpr (help_annotation != std::meta::info{}) {
             using AnnotationType = typename [:type_of(help_annotation):];
-            return extract<AnnotationType>(help_annotation).flags;
+            return convert_array<std::string_view>(extract<AnnotationType>(help_annotation).flags);
         } else {
             return default_help_flags;
         }
@@ -56,9 +63,11 @@ private:
 
     static constexpr auto help_flags{ _help_flags() };
 
+    static const std::string help_flags_usage;
+
     bool has_help_flag() const {
         for (const auto& [flag, _] : this->args) {
-            for (const StaticString& help_flag : this->help_flags) {
+            for (const std::string_view& help_flag : this->help_flags) {
                 if (flag == help_flag) {
                     return true;
                 }
@@ -68,7 +77,7 @@ private:
     }
 
     void show_help() const {
-        std::print("USAGE: {} {}", this->program_name, this->help_flags);
+        std::print("USAGE: {} [{}]", this->program_name, this->help_flags_usage);
 
         template for (constexpr std::meta::info arg : define_static_array(nonstatic_data_members_of(^^Args, ctx))) {
             using ArgType = typename [:type_of(arg):];
@@ -203,3 +212,6 @@ public:
         return args;
     }
 };
+
+template<typename T>
+const std::string ArgsParser<T>::help_flags_usage{ help_flags | std::views::join_with(std::string_view{ " | " }) | std::ranges::to<std::string>() };
