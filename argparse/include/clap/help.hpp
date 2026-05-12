@@ -14,4 +14,11 @@ namespace clap {
         static constexpr decltype(Msg) msg{ Msg };
         static constexpr std::array<T, sizeof...(Flags)> flags{ Flags... };
     };
+
+    struct _ArgHelp {};
+
+    template<auto Help>
+    struct ArgHelp : public _ArgHelp {
+        static constexpr decltype(Help) msg{ Help };
+    };
 }

@@ -91,15 +91,17 @@ private:
             if constexpr (define_static_array(annotations_of(arg)).size() > 0) {
                 std::print("{{ ");
                 template for (bool first{ true }; constexpr std::meta::info annotation : define_static_array(annotations_of(arg))) {
-                    if (!first) {
-                        std::print(", ");
-                    }
-
                     using AnnotationType = typename [:type_of(annotation):];
-                    constexpr AnnotationType format{ extract<AnnotationType>(annotation) };
-                    std::apply([format] (const auto&... args) { std::print(format.to_str().fmt.get(), args...); }, format.to_str().args);
+                    if constexpr (!std::is_base_of_v<clap::_ArgHelp, AnnotationType>) { // FIXME: here too, avoid hardcoding
+                        if (!first) {
+                            std::print(", ");
+                        }
 
-                    first = false;
+                        constexpr AnnotationType format{ extract<AnnotationType>(annotation) };
+                        std::apply([format] (const auto&... args) { std::print(format.to_str().fmt.get(), args...); }, format.to_str().args);
+
+                        first = false;
+                    }
                 }
                 std::print(" }}");
             }
@@ -110,12 +112,31 @@ private:
         }
 
         std::println();
+        std::println();
 
         if constexpr (constexpr std::meta::info help_annotation{ help_flags_info.first }; help_annotation != std::meta::info{}) {
             using AnnotationType = typename [:type_of(help_annotation):];
             constexpr AnnotationType _annotation{ extract<AnnotationType>(help_annotation) };
             std::println("Description:\n\t{}", _annotation.msg);
         }
+
+        std::println();
+        std::println("Arguments :");
+
+        template for (constexpr std::meta::info arg : define_static_array(nonstatic_data_members_of(^^Args, ctx))) {
+            using ArgType = typename [:type_of(arg):];
+
+            std::println("\t{} :", identifier_of(arg));
+
+            template for (constexpr std::meta::info annotation : define_static_array(annotations_of(arg))) {
+                using AnnotationType = typename [:type_of(annotation):];
+                constexpr AnnotationType _annotation{ extract<AnnotationType>(annotation) };
+                if constexpr (std::is_base_of_v<clap::_ArgHelp, AnnotationType>) {
+                    std::println("\t\t- {}", _annotation.msg);
+                }
+            }
+        }
+
         std::exit(0);
     }
 
@@ -191,7 +212,9 @@ public:
                 };
 
                 constexpr AnnotationType an{ extract<AnnotationType>(annotation) };
-                if constexpr (is_optional<MemberType>) {
+                if constexpr (std::is_base_of_v<clap::_ArgHelp, AnnotationType>) { // FIXME: find a better way to avoid calling .check() for specific annotations, instead of hardcoding types here
+                    continue;
+                } else if constexpr (is_optional<MemberType>) {
                     if (!arg.has_value()) {
                         continue;
                     } else if (!an.check(arg.value())) {

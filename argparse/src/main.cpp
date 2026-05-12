@@ -23,6 +23,7 @@
 #define _FOR_EACH(f, a, ...) f(a) __VA_OPT__(COMMA FOR_EACH_AGAIN PARENTHESES (f, __VA_ARGS__))
 #define FOR_EACH_AGAIN() _FOR_EACH
 #define STATIC_STRINGS(...) FOR_EACH(std::define_static_string, __VA_ARGS__)
+#define STATIC_STRING(str) STATIC_STRINGS(str)
 
 
 #define HELP [[=clap::Help<STATIC_STRINGS("Small program to test arguments parsing using C++26 reflection.", "--help", "-h", "help", "-?")>()]]
@@ -36,6 +37,7 @@ struct HELP Args {
     std::optional<unsigned int> year;
 
     [[=clap::AllowedValues<3.14159f, 2.71828f>()]]
+    [[=clap::ArgHelp<STATIC_STRING("Try pi or e, rounded to 5 decimal digits.")>()]]
     float constant;
 };
 
