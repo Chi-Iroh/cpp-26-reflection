@@ -20,6 +20,7 @@ concept Callable = requires (T func, Arg arg) {
     func(arg);
 };
 
+// std::decay_t in case std::define_static_string returns a char array instead of a char pointer
 using StaticString = std::decay_t<decltype(std::define_static_string("a"))>;
 
 constexpr std::array<StaticString, 3> default_help_flags{ "-h", "--help", "-?" };
