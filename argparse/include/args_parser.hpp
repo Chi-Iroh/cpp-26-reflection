@@ -101,13 +101,10 @@ private:
 
         std::println();
 
-        template for (constexpr std::meta::info annotation : define_static_array(annotations_of(^^Args))) {
-            using AnnotationType = typename [:type_of(annotation):];
-            constexpr AnnotationType _annotation{ extract<AnnotationType>(annotation) };
-            if constexpr (std::is_base_of_v<clap::_Help, AnnotationType>) {
-                std::println("Description:\n\t{}", _annotation.msg);
-                break;
-            }
+        if constexpr (constexpr std::meta::info help_annotation{ help_flags_info.first }; help_annotation != std::meta::info{}) {
+            using AnnotationType = typename [:type_of(help_annotation):];
+            constexpr AnnotationType _annotation{ extract<AnnotationType>(help_annotation) };
+            std::println("Description:\n\t{}", _annotation.msg);
         }
         std::exit(0);
     }
