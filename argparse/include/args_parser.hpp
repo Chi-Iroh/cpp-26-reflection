@@ -92,7 +92,7 @@ private:
                 std::print("{{ ");
                 template for (bool first{ true }; constexpr std::meta::info annotation : define_static_array(annotations_of(arg))) {
                     using AnnotationType = typename [:type_of(annotation):];
-                    if constexpr (!std::is_base_of_v<clap::_ArgHelp, AnnotationType>) { // FIXME: here too, avoid hardcoding
+                    if constexpr (std::is_base_of_v<clap::_Constraint, AnnotationType>) {
                         if (!first) {
                             std::print(", ");
                         }
@@ -213,7 +213,7 @@ public:
                 };
 
                 constexpr AnnotationType an{ extract<AnnotationType>(annotation) };
-                if constexpr (std::is_base_of_v<clap::_ArgHelp, AnnotationType>) { // FIXME: find a better way to avoid calling .check() for specific annotations, instead of hardcoding types here
+                if constexpr (!std::is_base_of_v<clap::_Constraint, AnnotationType>) {
                     continue;
                 } else if constexpr (is_optional<MemberType>) {
                     if (!arg.has_value()) {
