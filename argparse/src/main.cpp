@@ -43,7 +43,7 @@ struct HELP Args {
 
 int main(int argc, char* argv[]) {
     try {
-        const Args args{ ArgsParser<Args>{ argc, argv }.parseArgs() };
+        const Args args{ clap::parse<Args>(argc, argv) };
         std::println("{}", jsonDescribe<Args>(args));
     } catch (std::exception& err) {
         std::println(stderr, "ERROR: {}", err.what());
